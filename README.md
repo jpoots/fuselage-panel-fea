@@ -1,4 +1,4 @@
-# Pressurised Fuselage Panel Stress Analysis
+# Challenger 650 Fuselage Panel Stress Analysis
 
 Analytical and Abaqus finite element analysis of a pressurised fuselage section. The aim is to analyse a curved fuselage skin under cabin pressure, add a cut-out, study how the stresses and deflections change, and then look at reinforcing the opening.
 
