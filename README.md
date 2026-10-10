@@ -77,9 +77,30 @@ Stresses are in Pa. The colour bands span less than 0.05% of the value.
 
 Model files are in [`no_cutout/`](no_cutout/).
 
+## Cut-out model (in progress)
+
+The cut-out represents a cabin window, as a rectangle with rounded corners.
+
+| Dimension | Value | Note |
+|---|---|---|
+| Width, along the fuselage | 255 mm | Challenger 605 window ([Simple Flying](https://simpleflying.com/bombardier-challenger-604-vs-605-comparison/)) |
+| Height, around the fuselage | 410 mm | Same source |
+| Corner radius | 80 mm | Estimate; no published figure |
+
+The window is symmetric, so one quarter of a panel is modelled, with the window's centre at one corner and symmetry conditions on the edges that pass through it.
+
+| Dimension | Value |
+|---|---|
+| Radius | 1.345 m |
+| Arc | 90° |
+| Length | 0.5 m |
+| Quarter window, along the fuselage | 127.5 mm |
+| Quarter window, around the fuselage | 205 mm |
+| Quarter window corner radius | 80 mm |
+
 ## Next steps
 
-1. Add a cut-out and compare stresses and deflections with the baseline
+1. Add a window cut-out and compare stresses and deflections with the baseline
 2. Local mesh refinement around the cut-out
 3. Add reinforcement around the cut-out and compare
 4. Perform mesh refinement on secondary models
