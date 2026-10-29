@@ -222,3 +222,6 @@ __marimo__/
 
 # Personal working notes
 working_notes/
+
+# Abaqus shared folder
+abaqus_shared/
