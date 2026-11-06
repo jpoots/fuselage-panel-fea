@@ -2,7 +2,7 @@
 
 Analytical and Abaqus finite element analysis of a pressurised fuselage section. The aim is to analyse a curved fuselage skin under cabin pressure, add a cut-out, study how the stresses and deflections change, and then look at reinforcing the opening.
 
-**Status: work in progress.** The baseline model (no cut-out) is built and verified against thin-walled pressure vessel theory, and the quarter-panel symmetry model used for the cut-out is verified against the same theory. The cut-out and reinforcement studies are next.
+**Status: work in progress.** The baseline model (no cut-out) and the quarter-panel symmetry model are verified against thin-walled pressure vessel theory. The window cut-out model is complete, with a mesh convergence study at the window corner. The reinforcement study is next.
 
 ## The aircraft
 
@@ -81,12 +81,6 @@ Model files are in [`no_cutout/`](no_cutout/).
 
 The cut-out model uses symmetry to put the 1,000-node limit where it is needed, at the window. Before adding the window, the quarter panel was run without it to check that the symmetry conditions reproduce the baseline.
 
-| Item | Setting |
-|---|---|
-| Geometry | 90° arc, radius 1.345 m, length 0.5 m, centred on the global Z axis |
-| Elements | 420 S4R shells (42 around the arc, 10 along the length), 473 nodes |
-| Section, material, analysis, units | As the baseline |
-
 Loads and boundary conditions:
 
 | Item | Where | Represents |
@@ -96,8 +90,6 @@ Loads and boundary conditions:
 | ZSYMM | Curved edge at Z = 0 | Mirror plane across the fuselage, through the window centre |
 | YSYMM | Straight edge at θ = 0° | Mirror plane along the fuselage, through the window centre |
 | XSYMM | Straight edge at θ = 90° | Mirror plane through the top and bottom of the fuselage, so there is a window on each side |
-
-Each edge lies on a plane of constant global X, Y or Z, so the symmetry conditions are applied in global axes. Together they remove all six rigid body motions.
 
 ### Results
 
@@ -109,19 +101,11 @@ Each edge lies on a plane of constant global X, Y or Z, so the symmetry conditio
 | Radial growth | 1.254 mm | 1.254 mm (mean) | under 0.05% |
 | Axial stretch (0.5 m length) | 0.0949 mm | 0.0950 mm | under 0.05% |
 
-Inner and outer surface stresses differ by at most 0.04 MPa, including along the symmetry edges, so the symmetry conditions introduce no bending.
-
-Radial growth varies by about 0.6% around the arc (1.245 to 1.260 mm), lowest at the two straight edges. The stresses are unaffected, so this is a slight change of shape that barely stretches the skin, most likely from the flat elements approximating the curve.
-
 | Von Mises | Longitudinal | Hoop |
 |---|---|---|
 | ![Von Mises stress](no_cutout_symmetry/results/von_mises_stress.png) | ![Longitudinal stress](no_cutout_symmetry/results/longitudinal_stress.png) | ![Hoop stress](no_cutout_symmetry/results/hoop_stress.png) |
 
-Stresses are in Pa. The colour bands span less than 0.05% of the value.
-
-Model files are in [`no_cutout_symmetry/`](no_cutout_symmetry/).
-
-## Cut-out model (in progress)
+## Cut-out model
 
 The cut-out represents a cabin window, as a rectangle with rounded corners.
 
@@ -129,9 +113,7 @@ The cut-out represents a cabin window, as a rectangle with rounded corners.
 |---|---|---|
 | Width, along the fuselage | 255 mm | Challenger 605 window ([Simple Flying](https://simpleflying.com/bombardier-challenger-604-vs-605-comparison/)) |
 | Height, around the fuselage | 410 mm | Same source |
-| Corner radius | 80 mm | Estimate; no published figure |
-
-The window is symmetric, so one quarter of a panel is modelled, with the window's centre at one corner and symmetry conditions on the edges that pass through it.
+| Corner radius | 80 mm | Estimate |
 
 | Dimension | Value |
 |---|---|
@@ -142,18 +124,70 @@ The window is symmetric, so one quarter of a panel is modelled, with the window'
 | Quarter window, around the fuselage | 205 mm |
 | Quarter window corner radius | 80 mm |
 
+Loads and boundary conditions are the same as the quarter panel symmetry check, plus a transverse, outward shell edge load of 5,040 N/m on the window edge. This represents the cabin pressure on the window pane: 60,700 Pa × 0.02476 m² (quarter window area) = 1,503 N, spread over 0.298 m of edge.
+
+### Geometric non-linearity
+
+The analysis is run with geometric non-linearity on. A linear analysis balances forces on the undeformed shape, so it cannot see the hoop tension resisting any change of shape. Due to this the small imbalance left by a hand-calculated window load resulted in excessive deformation.
+
+### Initial coarse mesh
+
+![Von Mises stress on the coarse mesh](cutout/coarse/von_mises_stress.png)
+
+- **Far field:** away from the window, the hoop and longitudinal stresses are within about 0.5% of the no-cut-out values (81.64 and 40.82 MPa)
+- **Peak:** at the rounded window corner, about 380 MPa. This mesh is far too coarse to resolve the peak, so it is only an indication
+
+#### Size of the disturbed region
+
+A path plot of von Mises stress running away from the window was used to find how far the window affects the stress, and therefore where the mesh needs to be fine.
+
+![Von Mises stress along a path away from the window](cutout/coarse/mises_path.png)
+
+- The stress is highest close to the window and changes most steeply within about 0.1 m of it. Along the fuselage, the stress at the window edge falls from about 271 to 90 MPa within about 75 mm
+- It is within about 20% of the far field by about 0.25 m, and within about 5% by about 0.5 m
+- Beyond about 0.5 m it is flat at about 72 MPa
+
+From this, the panel was partitioned into three regions, each offset from the window outline.
+
+| Region | Distance from the window edge
+|---|---
+| Fine band | 0 to 0.1 m
+| Transition | 0.1 to 0.3 m
+| Rest of the panel | Beyond 0.3 m
+
+![Partitioned geometry](cutout/partitions.png)
+
+### Mesh convergence
+
+| Level | Nodes | Peak stress | Change |
+|---|---|---|---|
+| 1 | 450 | 335.9 MPa | |
+| 2 | 556 | 399.3 MPa | +19% |
+| 3 | 684 | 516.2 MPa | +29% |
+| 4 | 797 | 552.7 MPa | +7% |
+| Final | 864 | 613.9 MPa | +11% |
+
+The peak is not converged to the usual 5% target: the last refinement still raised it by 11%. Further refinement was prevented by the 1,000-node limit of the Abaqus Learning Edition. Every mesh from level 2 onwards is above yield (345 MPa), and the peak is converging towards a value well above yield, so the conclusion that the opening needs reinforcement does not depend on the exact value. Alternatives would be submodelling or a reduction in the size of the transition and fine areas.
+
+### Results (final mesh)
+
+**Far field.** Away from the window, the stresses match the model without a cut-out, as they did on the coarse mesh. Close to the window the stress is beyond yield so the opening needs reinforcement.
+
+| Von Mises | Longitudinal | Hoop |
+|---|---|---|
+| ![Von Mises stress](cutout/results/von_mises_stress.png) | ![Longitudinal stress](cutout/results/longitudinal_stress.png) | ![Hoop stress](cutout/results/hoop_stress.png) |
+
 ## Next steps
 
-1. Add a window cut-out and compare stresses and deflections with the baseline
-2. Local mesh refinement around the cut-out
-3. Add reinforcement around the cut-out and compare
-4. Perform mesh refinement on secondary models
+1. Reinforce the opening (in progress)
+2. Explore further theoretical verification
 
 ## Limitations
 
 - Skin thickness and alloy are estimates, not Challenger 650 data
-- Bare skin only: no frames, stringers or fasteners
+- Bare skin only: no frames, stringers or fasteners, and no window frame around the opening
+- The window pane load is applied as a uniform edge load directly on the skin. A real window frame would spread it, so the bending at the window edge is likely overstated
+- Window corner radius (80 mm) is an estimate, not Challenger 650 data
 - Constant skin thickness
-- Linear elastic material and small displacements
+- Peak stress at the window corner not fully converged, because of the 1,000-node limit
 - Pressure loading only; no flight or ground loads
-- No fatigue analysis

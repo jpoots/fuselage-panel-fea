@@ -225,3 +225,6 @@ working_notes/
 
 # Abaqus shared folder
 abaqus_shared/
+
+# Data to keep
+data_to_keep/
