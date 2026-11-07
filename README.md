@@ -181,15 +181,14 @@ Beyond level 5, refinement continued by increasing the element count on the corn
 
 ## Next steps
 
-1. Reinforce the opening (in progress)
-2. Explore further theoretical verification
+1. Data collected for the reinforcement. Complete write up.
 
 ## Limitations
 
 - Skin thickness and alloy are estimates, not Challenger 650 data
-- Bare skin only: no frames, stringers or fasteners, and no window frame around the opening
+- Bare skin only: no frames, stringers or fasteners, and no window frame around the opening for the project
 - The window pane load is applied as a uniform edge load directly on the skin. A real window frame would spread it, so the bending at the window edge is likely overstated
 - Window corner radius (80 mm) is an estimate, not Challenger 650 data
 - Constant skin thickness
 - Mesh convergence study was not as methodical as it could have been
-- Pressure loading only; no flight or ground loads
+- Pressure loading only; no flight loads, this is assumed as the limit load for the purposes for the project
