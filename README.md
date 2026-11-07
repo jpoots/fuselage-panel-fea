@@ -71,7 +71,7 @@ The model reproduces the theory to within 0.2% on stresses and displacements.
 
 | Von Mises | Longitudinal | Hoop |
 |---|---|---|
-| ![Von Mises stress](no_cutout/results/von_mises_stress.png) | ![Longitudinal stress](no_cutout/results/longitudinal_stress.png) | ![Hoop stress](no_cutout/results/hoop_stress.png) |
+| <img src="no_cutout/results/von_mises_stress.png" alt="Von Mises stress" width="300"> | <img src="no_cutout/results/longitudinal_stress.png" alt="Longitudinal stress" width="300"> | <img src="no_cutout/results/hoop_stress.png" alt="Hoop stress" width="300"> |
 
 Stresses are in Pa. The colour bands span less than 0.05% of the value.
 
@@ -103,7 +103,7 @@ Loads and boundary conditions:
 
 | Von Mises | Longitudinal | Hoop |
 |---|---|---|
-| ![Von Mises stress](no_cutout_symmetry/results/von_mises_stress.png) | ![Longitudinal stress](no_cutout_symmetry/results/longitudinal_stress.png) | ![Hoop stress](no_cutout_symmetry/results/hoop_stress.png) |
+| <img src="no_cutout_symmetry/results/von_mises_stress.png" alt="Von Mises stress" width="300"> | <img src="no_cutout_symmetry/results/longitudinal_stress.png" alt="Longitudinal stress" width="300"> | <img src="no_cutout_symmetry/results/hoop_stress.png" alt="Hoop stress" width="300"> |
 
 ## Cut-out model
 
@@ -165,9 +165,11 @@ From this, the panel was partitioned into three regions, each offset from the wi
 | 2 | 556 | 399.3 MPa | +19% |
 | 3 | 684 | 516.2 MPa | +29% |
 | 4 | 797 | 552.7 MPa | +7% |
-| Final | 864 | 613.9 MPa | +11% |
+| 5 | 864 | 613.9 MPa | +11% |
+| 6 | 753 | 620.4 MPa | +1.1% |
+| 7 | 950 | 630.5 MPa | +1.6% |
 
-The peak is not converged to the usual 5% target: the last refinement still raised it by 11%. Further refinement was prevented by the 1,000-node limit of the Abaqus Learning Edition. Every mesh from level 2 onwards is above yield (345 MPa), and the peak is converging towards a value well above yield, so the conclusion that the opening needs reinforcement does not depend on the exact value. Alternatives would be submodelling or a reduction in the size of the transition and fine areas.
+Beyond level 5, refinement continued by increasing the element count on the corner arc combined with biasing of edges and increase in mesh size in the far field region. A methodical experiment was difficult due to the node limit. The earlier levels were less systematic, changing different parts of the mesh at each step. A consistent refinement ratio from the start, or submodelling of the corner, would have given a cleaner study.
 
 ### Results (final mesh)
 
@@ -175,7 +177,7 @@ The peak is not converged to the usual 5% target: the last refinement still rais
 
 | Von Mises | Longitudinal | Hoop |
 |---|---|---|
-| ![Von Mises stress](cutout/results/von_mises_stress.png) | ![Longitudinal stress](cutout/results/longitudinal_stress.png) | ![Hoop stress](cutout/results/hoop_stress.png) |
+| <img src="cutout/results/von_mises_stress.png" alt="Von Mises stress" width="300"> | <img src="cutout/results/longitudinal_stress.png" alt="Longitudinal stress" width="300"> | <img src="cutout/results/hoop_stress.png" alt="Hoop stress" width="300"> |
 
 ## Next steps
 
@@ -189,5 +191,5 @@ The peak is not converged to the usual 5% target: the last refinement still rais
 - The window pane load is applied as a uniform edge load directly on the skin. A real window frame would spread it, so the bending at the window edge is likely overstated
 - Window corner radius (80 mm) is an estimate, not Challenger 650 data
 - Constant skin thickness
-- Peak stress at the window corner not fully converged, because of the 1,000-node limit
+- Mesh convergence study was not as methodical as it could have been
 - Pressure loading only; no flight or ground loads
