@@ -2,7 +2,7 @@
 
 Analytical and Abaqus finite element analysis of a pressurised fuselage section. The aim is to analyse a curved fuselage skin under cabin pressure, add a cut-out, study how the stresses and deflections change, and then look at reinforcing the opening.
 
-**Status: work in progress.** The baseline model (no cut-out) and the quarter-panel symmetry model are verified against thin-walled pressure vessel theory. The window cut-out model is complete, with a mesh convergence study at the window corner. The reinforcement study is next.
+Each analysis has its own folder ([`no_cutout/`](no_cutout/), [`no_cutout_symmetry/`](no_cutout_symmetry/), [`cutout/`](cutout/) and [`cutout_reinforced/`](cutout_reinforced/)), containing the images used in this README and, where kept, the Abaqus input and results files.
 
 ## The aircraft
 
@@ -74,8 +74,6 @@ The model reproduces the theory to within 0.2% on stresses and displacements.
 | <img src="no_cutout/results/von_mises_stress.png" alt="Von Mises stress" width="300"> | <img src="no_cutout/results/longitudinal_stress.png" alt="Longitudinal stress" width="300"> | <img src="no_cutout/results/hoop_stress.png" alt="Hoop stress" width="300"> |
 
 Stresses are in Pa. The colour bands span less than 0.05% of the value.
-
-Model files are in [`no_cutout/`](no_cutout/).
 
 ## Quarter panel symmetry check (no cut-out)
 
@@ -159,17 +157,17 @@ From this, the panel was partitioned into three regions, each offset from the wi
 
 ### Mesh convergence
 
-| Level | Nodes | Peak stress | Change |
+| Level | Nodes | Peak von Mises | Change |
 |---|---|---|---|
-| 1 | 450 | 335.9 MPa | |
-| 2 | 556 | 399.3 MPa | +19% |
-| 3 | 684 | 516.2 MPa | +29% |
-| 4 | 797 | 552.7 MPa | +7% |
-| 5 | 864 | 613.9 MPa | +11% |
-| 6 | 753 | 620.4 MPa | +1.1% |
-| 7 | 950 | 630.5 MPa | +1.6% |
+| 1 | 450 | 316.8 MPa | |
+| 2 | 556 | 382.6 MPa | +21% |
+| 3 | 684 | 514.9 MPa | +35% |
+| 4 | 797 | 557.5 MPa | +8% |
+| 5 | 864 | 628.8 MPa | +13% |
+| 6 | 753 | 634.1 MPa | +0.8% |
+| 7 | 950 | 641.0 MPa | +1.1% |
 
-Beyond level 5, refinement continued by increasing the element count on the corner arc combined with biasing of edges and increase in mesh size in the far field region. A methodical experiment was difficult due to the node limit. The earlier levels were less systematic, changing different parts of the mesh at each step. A consistent refinement ratio from the start, or submodelling of the corner, would have given a cleaner study.
+Beyond level 5, refinement continued by increasing the element count on the corner arc combined with biasing of edges and increase in mesh size in the far field region. A methodical experiment was difficult due to the node limit. The earlier levels were less systematic, changing different parts of the mesh at each step. A consistent refinement ratio from the start with appropriate biasing in place, or submodelling of the corner, would have given a cleaner study.
 
 ### Results (final mesh)
 
@@ -179,16 +177,52 @@ Beyond level 5, refinement continued by increasing the element count on the corn
 |---|---|---|
 | <img src="cutout/results/von_mises_stress.png" alt="Von Mises stress" width="300"> | <img src="cutout/results/longitudinal_stress.png" alt="Longitudinal stress" width="300"> | <img src="cutout/results/hoop_stress.png" alt="Hoop stress" width="300"> |
 
-## Next steps
+## Reinforcement
 
-1. Data collected for the reinforcement. Complete write up.
+The opening was reinforced by thickening the skin in the 0.1 m band around the window (the finely meshed band). Only the band thickness was changed, the level 7 mesh, loads and boundary conditions were unchanged. As a simplification, the operating pressure is taken as the limit load and the industry standard 1.5x ultimate factor of safety was used.
+
+Design criteria:
+
+| Case | Load | Criterion |
+|---|---|---|
+| Limit | 1.0 × operating | No yield: peak < 345 MPa |
+| Ultimate | 1.5 × limit | No failure: peak < 483 MPa |
+
+### Limit load
+
+Doubling the skin thickness to 2 mm reduced the peak von Mises stress from 641 MPa to 327 MPa, which is below yield (345 MPa).
+
+<img src="cutout_reinforced/limit/von_mises_stress.png" alt="Von Mises stress, 2 mm band, limit load" width="450">
+
+### Ultimate load, linear-elastic material
+
+<img src="cutout_reinforced/linear_ultimate/von_mises_stress.png" alt="Von Mises stress, 2 mm band, ultimate load, elastic" width="450">
+
+At ultimate load the peak was 459 MPa. This is below the ultimate strength but above yield. Above yield, a linear-elastic material model overestimates the stress, so the elastic check against ultimate strength is conservative. To find the true state of the corner, the ultimate case was rerun with an elastic-plastic material.
+
+### Ultimate load, elastic-plastic material
+
+2024-T3 was modelled as bilinear with a true stress of 345 MPa at yield, and 555 MPa at ultimate strength with a plastic strain of 0.132.
+
+| Quantity | Elastic | Elastic-plastic |
+|---|---|---|
+| Peak von Mises | 459 MPa | 347 MPa |
+| Peak plastic strain (PEEQ) | n/a | ~0.2% |
+
+| Von Mises | PEEQ |
+|---|---|
+| <img src="cutout_reinforced/non_linear_ultimate/von_mises_stress.png" alt="Von Mises stress, elastic-plastic" width="300"> | <img src="cutout_reinforced/non_linear_ultimate/peeq.png" alt="Equivalent plastic strain" width="300"> |
+
+The corner yields locally, with peak plastic strain of about 0.2%, well under the strain at ultimate strength (13%). The stress (347 MPa) remains well below the ultimate strength. The material is far from necking or fracture, so the 2 mm band meets the ultimate requirement with a large reserve.
 
 ## Limitations
 
 - Skin thickness and alloy are estimates, not Challenger 650 data
-- Bare skin only: no frames, stringers or fasteners, and no window frame around the opening for the project
-- The window pane load is applied as a uniform edge load directly on the skin. A real window frame would spread it, so the bending at the window edge is likely overstated
-- Window corner radius (80 mm) is an estimate, not Challenger 650 data
-- Constant skin thickness
+- Bare skin only, no frames, stringers or fasteners, and no window frame around the opening
+- The window pane load is applied as a uniform edge load directly on the skin
+- Some data such as the window corner radius (80 mm) is an estimate, not Challenger 650 data
+- Reinforcement modelled as a thicker band of skin, not a separate doubler with fasteners
 - Mesh convergence study was not as methodical as it could have been
-- Pressure loading only; no flight loads, this is assumed as the limit load for the purposes for the project
+- Pressure loading only, no flight loads, this is assumed as the limit load
+- Material values are typical
+- Some of the processes could benefit from automation using Python
